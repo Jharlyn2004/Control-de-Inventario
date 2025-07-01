@@ -1,0 +1,1717 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Control de Inventario - Minimarket Avanzado</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #f5f9fc;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      color: #333;
+      user-select: none;
+    }
+    header {
+      width: 100%;
+      background: #0288d1;
+      color: white;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      user-select: text;
+      position: sticky;
+      top: 0;
+      z-index: 110;
+    }
+    nav {
+      background: white;
+      display: flex;
+      justify-content: center;
+      gap: 0.8rem;
+      padding: 0.9rem 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 72px;
+      z-index: 105;
+      flex-wrap: wrap;
+    }
+    nav button {
+      background: #e0e0e0;
+      border: none;
+      padding: 0.6rem 1.3rem;
+      border-radius: 25px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #555;
+      cursor: pointer;
+      transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+      min-width: 110px;
+    }
+    nav button.active,
+    nav button:hover {
+      background: #0288d1;
+      color: white;
+      box-shadow: 0 5px 15px rgba(2,136,209,0.5);
+    }
+    main {
+      flex-grow: 1;
+      max-width: 1000px;
+      width: 100%;
+      margin: 1rem auto 3rem;
+      padding: 0 1rem 2rem;
+      user-select: text;
+    }
+    section.content-section {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      padding: 2rem 2.5rem 2.5rem;
+      display: none;
+      animation: fadeIn 0.5s ease forwards;
+    }
+    section.content-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(10px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: #0288d1;
+      font-weight: 700;
+      font-size: 1.8rem;
+      border-bottom: 3px solid #0288d1;
+      padding-bottom: 0.4rem;
+    }
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      grid-gap: 1.3rem;
+      align-items: end;
+    }
+    form label {
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      display: block;
+      color: #555;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+      width: 100%;
+      padding: 0.55rem 0.85rem;
+      border: 1.8px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    select:focus {
+      border-color: #0288d1;
+      outline: none;
+    }
+    button.form-btn {
+      background: #0288d1;
+      color: white;
+      border: none;
+      padding: 0.65rem 1.5rem;
+      font-size: 1.1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    button.form-btn:hover {
+      background: #0177bb;
+    }
+    .filter-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .filter-container > * {
+      flex: 1 1 45%;
+      min-width: 180px;
+    }
+    input#searchInput {
+      padding-left: 1.1rem;
+      border-radius: 20px;
+      border: 1.8px solid #ddd;
+      font-size: 1rem;
+      user-select: text;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+      user-select: text;
+    }
+    thead {
+      background: #0288d1;
+      color: white;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+    tbody tr:hover {
+      background: #f0f8ff;
+    }
+    td.actions {
+      text-align: center;
+      width: 110px;
+    }
+    button.action-btn {
+      margin: 0 0.25rem;
+      padding: 0.35rem 0.7rem;
+      font-size: 1rem;
+      border-radius: 4px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    button.edit-btn {
+      background: #fbc02d;
+      color: #444;
+    }
+    button.edit-btn:hover {
+      background: #d4a90e;
+      color: white;
+    }
+    button.delete-btn {
+      background: #e53935;
+      color: white;
+    }
+    button.delete-btn:hover {
+      background: #af2a29;
+    }
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      z-index: 1000;
+      user-select: none;
+    }
+    .modal.active {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      padding: 2rem 2.5rem;
+      max-width: 450px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      font-size: 1rem;
+      user-select: text;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: #0288d1;
+    }
+    .modal-content label {
+      margin-top: 0.9rem;
+      font-weight: 600;
+      display: block;
+      color: #555;
+    }
+    .modal-content input[type="text"],
+    .modal-content input[type="number"],
+    .modal-content select,
+    .modal-content input[type="date"] {
+      width: 100%;
+      padding: 0.55rem 0.85rem;
+      border: 1.8px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-top: 0.35rem;
+      transition: border-color 0.3s ease;
+    }
+    .modal-content input[type="text"]:focus,
+    .modal-content input[type="number"]:focus,
+    .modal-content select:focus,
+    .modal-content input[type="date"]:focus {
+      border-color: #0288d1;
+      outline: none;
+    }
+    .modal-actions {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+    .modal-actions button {
+      min-width: 100px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .close-btn {
+      background: #757575;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 0.6rem 1.3rem;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+    }
+    .close-btn:hover {
+      background: #5a5a5a;
+    }
+    footer {
+      margin-top: auto;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+      text-align: center;
+      width: 100%;
+      background: #e1f0fb;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      user-select: text;
+    }
+    /* Export buttons container */
+    .export-buttons {
+      margin-bottom: 1rem;
+      text-align: right;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .export-buttons button {
+      background: #0288d1;
+      color: white;
+      border: none;
+      padding: 0.55rem 1.3rem;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .export-buttons button:hover {
+      background: #0177bb;
+    }
+    /* Chart container */
+    #chartsContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+    .chart-box {
+      background: #fafafa;
+      border-radius: 6px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      padding: 1rem;
+      width: 400px;
+      max-width: 90vw;
+    }
+    .chart-box h3 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: #0288d1;
+      font-weight: 700;
+      text-align: center;
+    }
+    /* Ventas tabla */
+    #salesTable {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+      user-select: text;
+      margin-top: 1rem;
+    }
+    #salesTable thead {
+      background: #26a69a;
+      color: white;
+    }
+    #salesTable th, #salesTable td {
+      text-align: left;
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+    #salesTable tbody tr:hover {
+      background: #e1f7f4;
+    }
+    /* Proveedores tabla */
+    #suppliersTable {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 1rem;
+      user-select: text;
+      margin-top: 1rem;
+    }
+    #suppliersTable thead {
+      background: #5c6bc0;
+      color: white;
+    }
+    #suppliersTable th, #suppliersTable td {
+      text-align: left;
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+    #suppliersTable tbody tr:hover {
+      background: #d9dffa;
+    }
+    /* Stock alertas */
+    .alert-list {
+      color: #d32f2f;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-top: 0;
+      padding-left: 1.3rem;
+      max-width: 400px;
+    }
+    /* Etiquetas sugerencia */
+    .tags-container {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      background: #0288d1;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(2,136,209,0.7);
+      font-weight: 600;
+      font-size: 0.9rem;
+      user-select: none;
+    }
+    /* Reportes sección */
+    #reportsContent {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    #reportsContent > div {
+      background: #f1f8ff;
+      border-radius: 6px;
+      padding: 1rem 1.3rem;
+      box-shadow: inset 0 1px 5px rgb(2 136 209 / 0.25);
+    }
+    #reportsContent button {
+      margin-top: 0.7rem;
+      background: #0288d1;
+      color: white;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      white-space: nowrap;
+    }
+    #reportsContent button:hover {
+      background: #0177bb;
+    }
+    /* Responsive */
+    @media (max-width: 640px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+      .filter-container > * {
+        flex: 1 1 100%;
+      }
+      td.actions {
+        width: auto;
+      }
+      #chartsContainer {
+        flex-direction: column;
+        align-items: center;
+      }
+      .chart-box {
+        width: 95vw;
+      }
+      nav {
+        top: 108px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    Minimarket Control de Inventario Avanzado
+  </header>
+
+  <nav role="navigation" aria-label="Menú principal">
+    <button id="tab-add" class="active" aria-controls="section-add" aria-selected="true" role="tab" tabindex="0">Agregar Productos</button>
+    <button id="tab-inventory" aria-controls="section-inventory" aria-selected="false" role="tab" tabindex="-1">Inventario</button>
+    <button id="tab-charts" aria-controls="section-charts" aria-selected="false" role="tab" tabindex="-1">Gráficas</button>
+    <button id="tab-sales" aria-controls="section-sales" aria-selected="false" role="tab" tabindex="-1">Ventas</button>
+    <button id="tab-suppliers" aria-controls="section-suppliers" aria-selected="false" role="tab" tabindex="-1">Proveedores</button>
+    <button id="tab-alerts" aria-controls="section-alerts" aria-selected="false" role="tab" tabindex="-1">Alertas Stock</button>
+    <button id="tab-reports" aria-controls="section-reports" aria-selected="false" role="tab" tabindex="-1">Reportes</button>
+    <button id="tab-tags" aria-controls="section-tags" aria-selected="false" role="tab" tabindex="-1">Etiquetas</button>
+  </nav>
+
+  <main>
+    <!-- Sección Agregar Productos -->
+    <section id="section-add" class="content-section active" role="tabpanel" tabindex="0" aria-labelledby="tab-add">
+      <h2>Agregar Producto</h2>
+      <form id="productForm" aria-describedby="formDesc">
+        <div>
+          <label for="productName">Nombre</label>
+          <input type="text" id="productName" name="productName" placeholder="Ej: Leche entera" required autocomplete="off" />
+        </div>
+        <div>
+          <label for="productCategory">Categoría</label>
+          <select id="productCategory" name="productCategory" required>
+            <option value="" disabled selected>Selecciona categoría</option>
+            <option value="Lácteos">Lácteos</option>
+            <option value="Abarrotes">Abarrotes</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Limpieza">Limpieza</option>
+            <option value="Otros">Otros</option>
+          </select>
+        </div>
+        <div>
+          <label for="productQuantity">Cantidad</label>
+          <input type="number" id="productQuantity" name="productQuantity" min="0" placeholder="0" required />
+        </div>
+        <div>
+          <label for="productPrice">Precio Unitario (S/.)</label>
+          <input type="number" id="productPrice" name="productPrice" step="0.01" min="0" placeholder="0.00" required />
+        </div>
+        <div>
+          <button type="submit" id="addProductBtn" class="form-btn" aria-label="Agregar producto">Agregar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Sección Inventario -->
+    <section id="section-inventory" class="content-section" role="tabpanel" tabindex="0" aria-labelledby="tab-inventory">
+      <h2>Inventario</h2>
+
+      <div class="filter-container">
+        <input type="text" id="searchInput" placeholder="Buscar producto por nombre..." aria-label="Buscar producto por nombre" />
+        <select id="categoryFilter" aria-label="Filtrar productos por categoría">
+          <option value="all" selected>Filtrar por categoría</option>
+          <option value="Lácteos">Lácteos</option>
+          <option value="Abarrotes">Abarrotes</option>
+          <option value="Bebidas">Bebidas</option>
+          <option value="Limpieza">Limpieza</option>
+          <option value="Otros">Otros</option>
+        </select>
+      </div>
+
+      <div class="export-buttons" aria-label="Opciones de exportación">
+        <button id="exportPdfBtn" type="button" aria-label="Exportar inventario a PDF">Exportar PDF</button>
+        <button id="exportExcelBtn" type="button" aria-label="Exportar inventario a Excel">Exportar Excel</button>
+      </div>
+
+      <table aria-live="polite" aria-label="Lista de productos del inventario">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario (S/.)</th>
+            <th>Total (S/.)</th>
+            <th class="actions" scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody" role="rowgroup">
+          <!-- Productos se insertan aquí -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Sección Gráficas -->
+    <section id="section-charts" class="content-section" role="tabpanel" tabindex="0" aria-labelledby="tab-charts">
+      <h2>Gráficas</h2>
+      <div id="chartsContainer" aria-live="polite" aria-atomic="true" aria-relevant="additions removals">
+        <div class="chart-box">
+          <h3>Cantidad total por categoría en Inventario</h3>
+          <canvas id="chartQuantityByCategory" aria-label="Gráfico de barras de la cantidad total por categoría" role="img"></canvas>
+        </div>
+        <div class="chart-box">
+          <h3>Valor total (S/.) por categoría en Inventario</h3>
+          <canvas id="chartValueByCategory" aria-label="Gráfico de pastel del valor total por categoría" role="img"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Ventas -->
+    <section id="section-sales" class="content-section" role="tabpanel" tabindex="0" aria-labelledby="tab-sales">
+      <h2>Ventas</h2>
+      <form id="saleForm" aria-describedby="formSalesDesc" style="margin-bottom:2rem; display:grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+        <div style="display:flex; flex-direction:column;">
+          <label for="saleProduct">Producto</label>
+          <select id="saleProduct" required>
+            <!-- Opciones llenadas dinámicamente -->
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <label for="saleQuantity">Cantidad</label>
+          <input type="number" id="saleQuantity" min="1" placeholder="1" required />
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <label for="saleDate">Fecha</label>
+          <input type="date" id="saleDate" required />
+        </div>
+        <div style="font-weight:600; color:#0288d1;">
+          <label>Total (S/.)</label>
+          <div id="saleTotalDisplay" style="font-size:1.2rem; padding-top:0.3rem;">S/ 0.00</div>
+        </div>
+        <div>
+          <button type="submit" class="form-btn" aria-label="Registrar venta">Registrar</button>
+        </div>
+      </form>
+
+      <table id="salesTable" aria-live="polite" aria-label="Lista de ventas realizadas">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario (S/.)</th>
+            <th>Total (S/.)</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="salesTableBody" role="rowgroup">
+          <!-- Ventas se insertan aquí -->
+        </tbody>
+      </table>
+
+      <div class="chart-box" style="margin-top:2rem;">
+        <h3>Ventas totales (S/.) por categoría</h3>
+        <canvas id="chartSalesByCategory" aria-label="Gráfico de barras de las ventas totales por categoría" role="img"></canvas>
+      </div>
+    </section>
+
+    <!-- Sección Proveedores -->
+    <section id="section-suppliers" class="content-section" role="tabpanel" tabindex="0" aria-labelledby="tab-suppliers">
+      <h2>Proveedores</h2>
+      <form id="supplierForm" style="display:grid; grid-template-columns: 2fr 2fr 2fr auto; gap: 1rem; align-items: end; margin-bottom:2rem;">
+        <div>
+          <label for="supplierName">Nombre del Proveedor</label>
+          <input type="text" id="supplierName" placeholder="Ej: Distribuidora ABC" required autocomplete="off"/>
+        </div>
+        <div>
+          <label for="supplierContact">Contacto (teléfono o email)</label>
+          <input type="text" id="supplierContact" placeholder="Ej: 987654321 o email@dominio.com" required autocomplete="off"/>
+        </div>
+        <div>
+          <label for="supplierNotes">Notas (opcional)</label>
+          <input type="text" id="supplierNotes" placeholder="Opcional"/>
+        </div>
+        <div>
+          <button type="submit" class="form-btn" aria-label="Agregar proveedor">Agregar</button>
+        </div>
+      </form>
+      <table id="suppliersTable" aria-live="polite" aria-label="Lista de proveedores">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Notas</th>
+            <th class="actions" scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="suppliersTableBody" role="rowgroup">
+          <!-- Proveedores se insertan aquí -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Sección Alertas Stock -->
+    <section id="section-alerts" class="content-section" role="tabpanel" tabindex="0" aria-labelledby="tab-alerts">
+      <h2>Alertas de Stock Bajo</h2>
+      <p>Estos productos tienen stock por debajo del umbral de <strong>5 unidades</strong> y deberían ser reabastecidos pronto.</p>
+      <ul class="alert-list" id="stockAlertsList" aria-live="polite" aria-atomic="true">
+        <!-- Alertas stock bajo dinámicas -->
+      </ul>
+    </section>
+
+    <!-- Sección Reportes -->
+    <section id="section-reports" class="content-section" role="tabpanel" tabindex="0" aria-labelledby="tab-reports">
+      <h2>Reportes</h2>
+      <div id="reportsContent">
+        <div>
+          <h3>Resumen Mensual de Ventas</h3>
+          <p id="monthlySalesSummary">Calculando...</p>
+          <button id="exportSalesExcelBtn" aria-label="Exportar resumen de ventas a Excel">Exportar Resumen a Excel</button>
+        </div>
+        <div>
+          <h3>Resumen Mensual de Inventario</h3>
+          <p id="monthlyInventorySummary">Calculando...</p>
+          <button id="exportInventoryExcelBtn" aria-label="Exportar resumen de inventario a Excel">Exportar Inventario a Excel</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sección Etiquetas -->
+    <section id="section-tags" class="content-section" role="tabpanel" tabindex="0" aria-labelledby="tab-tags">
+      <h2>Etiquetas para Productos</h2>
+      <p>Use las etiquetas para identificar categorías o para organizar mejor su inventario visualmente.</p>
+      <div id="tagsContainer" class="tags-container" aria-live="polite" aria-atomic="true">
+        <!-- Etiquetas dinámicas -->
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal para editar producto -->
+  <div id="editModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle" aria-describedby="editModalDesc">
+    <div class="modal-content">
+      <h3 id="editModalTitle">Editar Producto</h3>
+      <form id="editProductForm">
+        <label for="editProductName">Nombre</label>
+        <input type="text" id="editProductName" required autocomplete="off" />
+        <label for="editProductCategory">Categoría</label>
+        <select id="editProductCategory" required>
+          <option value="Lácteos">Lácteos</option>
+          <option value="Abarrotes">Abarrotes</option>
+          <option value="Bebidas">Bebidas</option>
+          <option value="Limpieza">Limpieza</option>
+          <option value="Otros">Otros</option>
+        </select>
+        <label for="editProductQuantity">Cantidad</label>
+        <input type="number" id="editProductQuantity" min="0" required />
+        <label for="editProductPrice">Precio Unitario (S/.)</label>
+        <input type="number" id="editProductPrice" min="0" step="0.01" required />
+        <div class="modal-actions">
+          <button type="button" class="close-btn" id="cancelEditBtn" aria-label="Cancelar edición">Cancelar</button>
+          <button type="submit" id="saveEditBtn" aria-label="Guardar cambios">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal para editar proveedor -->
+  <div id="editSupplierModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="editSupplierModalTitle" aria-describedby="editSupplierModalDesc">
+    <div class="modal-content">
+      <h3 id="editSupplierModalTitle">Editar Proveedor</h3>
+      <form id="editSupplierForm">
+        <label for="editSupplierName">Nombre</label>
+        <input type="text" id="editSupplierName" required autocomplete="off" />
+        <label for="editSupplierContact">Contacto</label>
+        <input type="text" id="editSupplierContact" required autocomplete="off" />
+        <label for="editSupplierNotes">Notas</label>
+        <input type="text" id="editSupplierNotes" />
+        <div class="modal-actions">
+          <button type="button" class="close-btn" id="cancelEditSupplierBtn" aria-label="Cancelar edición proveedor">Cancelar</button>
+          <button type="submit" id="saveEditSupplierBtn" aria-label="Guardar cambios proveedor">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2024 Minimarket - Control de Inventario Avanzado
+  </footer>
+
+  <!-- Librerías CDN para exportar y gráficas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    (() => {
+      "use strict";
+
+      // Variables DOM tabs
+      const tabs = {
+        add: document.getElementById('tab-add'),
+        inventory: document.getElementById('tab-inventory'),
+        charts: document.getElementById('tab-charts'),
+        sales: document.getElementById('tab-sales'),
+        suppliers: document.getElementById('tab-suppliers'),
+        alerts: document.getElementById('tab-alerts'),
+        reports: document.getElementById('tab-reports'),
+        tags: document.getElementById('tab-tags')
+      };
+      const sections = {
+        add: document.getElementById('section-add'),
+        inventory: document.getElementById('section-inventory'),
+        charts: document.getElementById('section-charts'),
+        sales: document.getElementById('section-sales'),
+        suppliers: document.getElementById('section-suppliers'),
+        alerts: document.getElementById('section-alerts'),
+        reports: document.getElementById('section-reports'),
+        tags: document.getElementById('section-tags')
+      };
+
+      // Inventario vars
+      const productForm = document.getElementById('productForm');
+      const productTableBody = document.getElementById('productTableBody');
+      const searchInput = document.getElementById('searchInput');
+      const categoryFilter = document.getElementById('categoryFilter');
+
+      // Modal editar producto
+      const editModal = document.getElementById('editModal');
+      const editProductForm = document.getElementById('editProductForm');
+      const editProductName = document.getElementById('editProductName');
+      const editProductCategory = document.getElementById('editProductCategory');
+      const editProductQuantity = document.getElementById('editProductQuantity');
+      const editProductPrice = document.getElementById('editProductPrice');
+      const cancelEditBtn = document.getElementById('cancelEditBtn');
+
+      // Export buttons inventario
+      const exportPdfBtn = document.getElementById('exportPdfBtn');
+      const exportExcelBtn = document.getElementById('exportExcelBtn');
+
+      // Gráficos inventario
+      const ctxQuantityByCategory = document.getElementById('chartQuantityByCategory').getContext('2d');
+      const ctxValueByCategory = document.getElementById('chartValueByCategory').getContext('2d');
+      let chartQuantity = null;
+      let chartValue = null;
+
+      // Ventas vars
+      const saleForm = document.getElementById('saleForm');
+      const saleProductSelect = document.getElementById('saleProduct');
+      const saleQuantityInput = document.getElementById('saleQuantity');
+      const saleDateInput = document.getElementById('saleDate');
+      const saleTotalDisplay = document.getElementById('saleTotalDisplay');
+      const salesTableBody = document.getElementById('salesTableBody');
+      const ctxSalesByCategory = document.getElementById('chartSalesByCategory').getContext('2d');
+      let chartSales = null;
+
+      // Proveedores vars
+      const supplierForm = document.getElementById('supplierForm');
+      const suppliersTableBody = document.getElementById('suppliersTableBody');
+
+      // Modal editar proveedor
+      const editSupplierModal = document.getElementById('editSupplierModal');
+      const editSupplierForm = document.getElementById('editSupplierForm');
+      const editSupplierName = document.getElementById('editSupplierName');
+      const editSupplierContact = document.getElementById('editSupplierContact');
+      const editSupplierNotes = document.getElementById('editSupplierNotes');
+      const cancelEditSupplierBtn = document.getElementById('cancelEditSupplierBtn');
+
+      // Alertas stock
+      const stockAlertsList = document.getElementById('stockAlertsList');
+
+      // Reportes vars
+      const monthlySalesSummary = document.getElementById('monthlySalesSummary');
+      const monthlyInventorySummary = document.getElementById('monthlyInventorySummary');
+      const exportSalesExcelBtn = document.getElementById('exportSalesExcelBtn');
+      const exportInventoryExcelBtn = document.getElementById('exportInventoryExcelBtn');
+
+      // Etiquetas vars
+      const tagsContainer = document.getElementById('tagsContainer');
+
+      // Datos en memoria
+      let products = [];
+      let sales = [];
+      let suppliers = [];
+      let editingId = null;
+      let editingSupplierId = null;
+
+      // Generar id único
+      function generateId() {
+        return '_' + Math.random().toString(36).substr(2, 9);
+      }
+
+      // Guardar datos
+      function saveData() {
+        localStorage.setItem('minimarket_inventory', JSON.stringify(products));
+        localStorage.setItem('minimarket_sales', JSON.stringify(sales));
+        localStorage.setItem('minimarket_suppliers', JSON.stringify(suppliers));
+      }
+
+      // Cargar datos
+      function loadData() {
+        const prodData = localStorage.getItem('minimarket_inventory');
+        products = prodData ? JSON.parse(prodData) : [];
+
+        const salesData = localStorage.getItem('minimarket_sales');
+        sales = salesData ? JSON.parse(salesData) : [];
+
+        const suppliersData = localStorage.getItem('minimarket_suppliers');
+        suppliers = suppliersData ? JSON.parse(suppliersData) : [];
+      }
+
+      // ===================== INVENTARIO ===========================
+
+      // Render tabla inventario con filtros
+      function renderTable(filterText = '', filterCategory = 'all') {
+        productTableBody.innerHTML = '';
+        let filteredProducts = products;
+        if (filterText.trim() !== '') {
+          filteredProducts = filteredProducts.filter(p =>
+            p.name.toLowerCase().includes(filterText.toLowerCase())
+          );
+        }
+        if (filterCategory !== 'all') {
+          filteredProducts = filteredProducts.filter(p => p.category === filterCategory);
+        }
+        if (filteredProducts.length === 0) {
+          productTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No se encontraron productos.</td></tr>';
+          return;
+        }
+        for (const product of filteredProducts) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${product.name}</td>
+            <td>${product.category}</td>
+            <td>${product.quantity}</td>
+            <td>S/ ${product.price.toFixed(2)}</td>
+            <td>S/ ${(product.quantity * product.price).toFixed(2)}</td>
+            <td class="actions">
+              <button class="action-btn edit-btn" aria-label="Editar ${product.name}" data-id="${product.id}">Editar</button>
+              <button class="action-btn delete-btn" aria-label="Eliminar ${product.name}" data-id="${product.id}">Eliminar</button>
+            </td>
+          `;
+          productTableBody.appendChild(tr);
+        }
+      }
+
+      // Render opciones select producto (para ventas)
+      function renderProductOptions() {
+        saleProductSelect.innerHTML = '<option value="" disabled selected>Selecciona producto</option>';
+        products.forEach(p => {
+          saleProductSelect.innerHTML += `<option value="${p.id}" data-price="${p.price}" data-quantity="${p.quantity}">${p.name} (${p.category}) - Stock: ${p.quantity}</option>`;
+        });
+      }
+
+      // Calcular y mostrar total venta actual
+      function updateSaleTotal() {
+        const selectedIndex = saleProductSelect.selectedIndex;
+        if (selectedIndex < 1) {
+          saleTotalDisplay.textContent = 'S/ 0.00';
+          return;
+        }
+        const price = parseFloat(saleProductSelect.selectedOptions[0].dataset.price);
+        const qty = Number(saleQuantityInput.value);
+        if (isNaN(price) || isNaN(qty) || qty <= 0) {
+          saleTotalDisplay.textContent = 'S/ 0.00';
+          return;
+        }
+        saleTotalDisplay.textContent = `S/ ${(price * qty).toFixed(2)}`;
+      }
+
+      // Añadir producto
+      function addProduct(name, category, quantity, price) {
+        const newProduct = {
+          id: generateId(),
+          name: name.trim(),
+          category,
+          quantity: Number(quantity),
+          price: Number(price)
+        };
+        products.push(newProduct);
+        saveData();
+        renderTable(searchInput.value, categoryFilter.value);
+        renderProductOptions();
+        updateChartsAndTagsAndAlerts();
+      }
+
+      // Abrir modal editar producto
+      function openEditModal(product) {
+        editingId = product.id;
+        editProductName.value = product.name;
+        editProductCategory.value = product.category;
+        editProductQuantity.value = product.quantity;
+        editProductPrice.value = product.price.toFixed(2);
+        editModal.classList.add('active');
+        editProductName.focus();
+      }
+
+      // Cerrar modal editar producto
+      function closeEditModal() {
+        editingId = null;
+        editModal.classList.remove('active');
+        editProductForm.reset();
+      }
+
+      // Actualizar producto
+      function updateProduct(name, category, quantity, price) {
+        const index = products.findIndex(p => p.id === editingId);
+        if (index > -1) {
+          products[index].name = name.trim();
+          products[index].category = category;
+          products[index].quantity = Number(quantity);
+          products[index].price = Number(price);
+          saveData();
+          renderTable(searchInput.value, categoryFilter.value);
+          renderProductOptions();
+          closeEditModal();
+          updateChartsAndTagsAndAlerts();
+        }
+      }
+
+      // Eliminar producto
+      function deleteProduct(id) {
+        const confirmDelete = confirm('¿Está seguro que quiere eliminar este producto? Esta acción no eliminará las ventas realizadas con este producto.');
+        if (!confirmDelete) return;
+        products = products.filter(p => p.id !== id);
+        saveData();
+        renderTable(searchInput.value, categoryFilter.value);
+        renderProductOptions();
+        updateChartsAndTagsAndAlerts();
+      }
+
+      // ===================== VENTAS ==============================
+
+      // Render tabla ventas
+      function renderSalesTable() {
+        salesTableBody.innerHTML = '';
+        if (sales.length === 0) {
+          salesTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#888;">No hay ventas registradas.</td></tr>';
+          return;
+        }
+        sales.forEach(sale => {
+          const product = products.find(p => p.id === sale.productId);
+          const productName = product ? product.name : '[Producto eliminado]';
+          const category = product ? product.category : '[N/A]';
+          const price = sale.price;
+          const total = sale.quantity * price;
+          const saleDate = new Date(sale.date).toLocaleDateString('es-PE');
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${productName}</td>
+            <td>${category}</td>
+            <td>${sale.quantity}</td>
+            <td>S/ ${price.toFixed(2)}</td>
+            <td>S/ ${total.toFixed(2)}</td>
+            <td>${saleDate}</td>
+          `;
+          salesTableBody.appendChild(tr);
+        });
+      }
+
+      // Añadir venta
+      function addSale(productId, quantity, date) {
+        const product = products.find(p => p.id === productId);
+        if (!product) {
+          alert('Producto no válido.');
+          return false;
+        }
+        quantity = Number(quantity);
+        if (quantity <= 0) {
+          alert('Cantidad debe ser mayor que cero.');
+          return false;
+        }
+        if (quantity > product.quantity) {
+          alert(`No hay suficiente stock. Stock disponible: ${product.quantity}`);
+          return false;
+        }
+        // Resta el stock vendido
+        product.quantity -= quantity;
+        // Guarda la venta
+        sales.push({
+          id: generateId(),
+          productId,
+          quantity,
+          price: product.price,
+          date
+        });
+        saveData();
+        return true;
+      }
+
+      // ===================== PROVEEDORES =============================
+
+      // Render tabla proveedores
+      function renderSuppliersTable() {
+        suppliersTableBody.innerHTML = '';
+        if(suppliers.length === 0){
+          suppliersTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#888;">No hay proveedores registrados.</td></tr>';
+          return;
+        }
+        suppliers.forEach(supplier => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${supplier.name}</td>
+            <td>${supplier.contact}</td>
+            <td>${supplier.notes || ''}</td>
+            <td class="actions">
+              <button class="action-btn editSupplier-btn" aria-label="Editar proveedor ${supplier.name}" data-id="${supplier.id}">Editar</button>
+              <button class="action-btn deleteSupplier-btn" aria-label="Eliminar proveedor ${supplier.name}" data-id="${supplier.id}">Eliminar</button>
+            </td>
+          `;
+          suppliersTableBody.appendChild(tr);
+        });
+      }
+
+      // Añadir proveedor
+      function addSupplier(name, contact, notes) {
+        suppliers.push({
+          id: generateId(),
+          name: name.trim(),
+          contact: contact.trim(),
+          notes: notes.trim() || ''
+        });
+        saveData();
+        renderSuppliersTable();
+      }
+
+      // Abrir modal editar proveedor
+      function openEditSupplierModal(supplier){
+        editingSupplierId = supplier.id;
+        editSupplierName.value = supplier.name;
+        editSupplierContact.value = supplier.contact;
+        editSupplierNotes.value = supplier.notes || '';
+        editSupplierModal.classList.add('active');
+        editSupplierName.focus();
+      }
+
+      // Cerrar modal editar proveedor
+      function closeEditSupplierModal(){
+        editingSupplierId = null;
+        editSupplierModal.classList.remove('active');
+        editSupplierForm.reset();
+      }
+
+      // Actualizar proveedor
+      function updateSupplier(name, contact, notes){
+        const idx = suppliers.findIndex(s => s.id === editingSupplierId);
+        if(idx > -1){
+          suppliers[idx].name = name.trim();
+          suppliers[idx].contact = contact.trim();
+          suppliers[idx].notes = notes.trim() || '';
+          saveData();
+          renderSuppliersTable();
+          closeEditSupplierModal();
+        }
+      }
+
+      // Eliminar proveedor
+      function deleteSupplier(id){
+        const confirmDelete = confirm('¿Está seguro que quiere eliminar este proveedor?');
+        if(!confirmDelete) return;
+        suppliers = suppliers.filter(s => s.id !== id);
+        saveData();
+        renderSuppliersTable();
+      }
+
+      // ===================== ALERTAS ===============================
+
+      // Render alertas stock bajo (< 5)
+      function renderStockAlerts(){
+        stockAlertsList.innerHTML = '';
+        const lowStockProducts = products.filter(p => p.quantity < 5);
+        if(lowStockProducts.length === 0){
+          stockAlertsList.innerHTML = '<li>Actualmente no hay productos con stock bajo.</li>';
+          return;
+        }
+        lowStockProducts.forEach(p => {
+          const li = document.createElement('li');
+          li.textContent = `${p.name} (${p.category}) - Stock: ${p.quantity}`;
+          stockAlertsList.appendChild(li);
+        });
+      }
+
+      // ===================== REPORTES =============================
+
+      // Obtener resumen mensual de ventas (total por mes y cantidad)
+      function getMonthlySalesSummary(){
+        const monthCount = {};
+        for(const sale of sales){
+          const dateObj = new Date(sale.date);
+          const key = `${dateObj.getFullYear()}-${dateObj.getMonth()+1}`;
+          if(!monthCount[key]) monthCount[key] = {total:0, qty:0};
+          monthCount[key].total += sale.quantity * sale.price;
+          monthCount[key].qty += sale.quantity;
+        }
+        return monthCount;
+      }
+
+      // Obtener resumen mensual inventario (total por mes agregado o editado)
+      // Para simplicidad, solo informa cantidad productos total actual y valor inventario
+      function getInventorySummary(){
+        let totalValue = 0;
+        let totalUnits = 0;
+        for(const p of products){
+          totalUnits += p.quantity;
+          totalValue += p.quantity * p.price;
+        }
+        return {totalUnits, totalValue};
+      }
+
+      // Mostrar resumen mensual de ventas
+      function renderMonthlySalesSummary(){
+        const summary = getMonthlySalesSummary();
+        if(Object.keys(summary).length === 0){
+          monthlySalesSummary.textContent = 'No se han registrado ventas aún.';
+          return;
+        }
+        let html = '<ul>';
+        for(const key of Object.keys(summary).sort()){
+          const [year, month] = key.split('-');
+          const displayMonth = new Date(year, month-1).toLocaleString('es-PE', {month:'long', year:'numeric'});
+          html += `<li><strong>${displayMonth}:</strong> S/ ${summary[key].total.toFixed(2)} - ${summary[key].qty} unidades</li>`;
+        }
+        html += '</ul>';
+        monthlySalesSummary.innerHTML = html;
+      }
+
+      // Mostrar resumen inventario
+      function renderMonthlyInventorySummary(){
+        const inv = getInventorySummary();
+        monthlyInventorySummary.innerHTML = `<strong>${inv.totalUnits}</strong> unidades en inventario con un valor total de <strong>S/ ${inv.totalValue.toFixed(2)}</strong>.`;
+      }
+
+      // Exportar resumen ventas a Excel
+      function exportMonthlySalesToExcel(){
+        const summary = getMonthlySalesSummary();
+        if(Object.keys(summary).length === 0){
+          alert('No hay ventas registradas para exportar.');
+          return;
+        }
+        const worksheetData = [['Mes', 'Total ventas (S/.)', 'Cantidad vendida']];
+        for(const key of Object.keys(summary).sort()){
+          const [year, month] = key.split('-');
+          const displayMonth = new Date(year, month-1).toLocaleString('es-PE', {month:'long', year:'numeric'});
+          worksheetData.push([displayMonth, summary[key].total.toFixed(2), summary[key].qty]);
+        }
+        const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Resumen Ventas');
+        XLSX.writeFile(wb, 'resumen_ventas_minimarket.xlsx');
+      }
+
+      // Exportar inventario completo a Excel
+      function exportInventoryToExcel(){
+        if(products.length === 0) {
+          alert('No hay productos para exportar.');
+          return;
+        }
+        const worksheetData = [
+          ['Nombre', 'Categoría', 'Cantidad', 'Precio Unitario (S/.)', 'Total (S/.)']
+        ];
+        products.forEach((p) => {
+          worksheetData.push([
+            p.name,
+            p.category,
+            p.quantity,
+            p.price.toFixed(2),
+            (p.quantity * p.price).toFixed(2)
+          ]);
+        });
+        const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
+        XLSX.writeFile(wb, 'inventario_minimarket.xlsx');
+      }
+
+      // ===================== ETIQUETAS =============================
+
+      // Render etiquetas de categorías actuales en inventario
+      function renderTags(){
+        tagsContainer.innerHTML = '';
+        const categoriesSet = new Set(products.map(p => p.category));
+        const categories = Array.from(categoriesSet);
+        if(categories.length === 0){
+          tagsContainer.textContent = 'No hay categorías disponibles para mostrar.';
+          return;
+        }
+        categories.forEach(cat => {
+          const div = document.createElement('div');
+          div.className = 'tag';
+          div.textContent = cat;
+          tagsContainer.appendChild(div);
+        });
+      }
+
+      // ===================== GRÁFICOS =============================
+
+      // Actualiza los gráficos de inventario
+      function updateChartsAndTagsAndAlerts(){
+        updateCharts();
+        renderTags();
+        renderStockAlerts();
+      }
+
+      // Actualiza gráficos inventario
+      function updateCharts() {
+        const categories = ['Lácteos', 'Abarrotes', 'Bebidas', 'Limpieza', 'Otros'];
+        let qtyByCategory = {};
+        let valByCategory = {};
+        categories.forEach(c => { qtyByCategory[c] = 0; valByCategory[c] = 0; });
+        products.forEach(p => {
+          const cat = categories.includes(p.category) ? p.category : 'Otros';
+          qtyByCategory[cat] += p.quantity;
+          valByCategory[cat] += p.quantity * p.price;
+        });
+        const qtyData = categories.map(c => qtyByCategory[c]);
+        const valData = categories.map(c => valByCategory[c]);
+        // Cantidad
+        if(chartQuantity) {
+          chartQuantity.data.datasets[0].data = qtyData;
+          chartQuantity.update();
+        } else {
+          chartQuantity = new Chart(ctxQuantityByCategory, {
+            type: 'bar',
+            data: {
+              labels: categories,
+              datasets: [{
+                label: 'Cantidad total',
+                data: qtyData,
+                backgroundColor: '#0288d1'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { stepSize: 1 }
+                }
+              }
+            }
+          });
+        }
+        // Valor (pastel)
+        if(chartValue) {
+          chartValue.data.datasets[0].data = valData;
+          chartValue.update();
+        } else {
+          chartValue = new Chart(ctxValueByCategory, {
+            type: 'pie',
+            data: {
+              labels: categories,
+              datasets: [{
+                label: 'Valor total (S/.)',
+                data: valData,
+                backgroundColor: [
+                  '#0288d1',
+                  '#26a69a',
+                  '#ffa726',
+                  '#ab47bc',
+                  '#ef5350'
+                ]
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: 'bottom' },
+                tooltip: { enabled: true },
+              }
+            }
+          });
+        }
+      }
+
+      // Actualiza gráficos ventas
+      function updateSalesChart() {
+        const categories = ['Lácteos', 'Abarrotes', 'Bebidas', 'Limpieza', 'Otros'];
+        let valByCategory = {};
+        categories.forEach(c => valByCategory[c] = 0);
+        sales.forEach(sale => {
+          // Obtener categoría actual del producto (puede estar eliminado)
+          const product = products.find(p => p.id === sale.productId);
+          const cat = product && categories.includes(product.category) ? product.category : 'Otros';
+          valByCategory[cat] += sale.quantity * sale.price;
+        });
+        const salesData = categories.map(c => valByCategory[c]);
+        if(chartSales) {
+          chartSales.data.datasets[0].data = salesData;
+          chartSales.update();
+        } else {
+          chartSales = new Chart(ctxSalesByCategory, {
+            type: 'bar',
+            data: {
+              labels: categories,
+              datasets: [{
+                label: 'Ventas totales (S/.)',
+                data: salesData,
+                backgroundColor: '#26a69a'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+        }
+      }
+
+      // ===================== EXPORTACIÓN PDF =====================
+
+      async function exportToPDF() {
+        if(products.length === 0) {
+          alert('No hay productos para exportar.');
+          return;
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation: 'landscape'});
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 10;
+        doc.setFontSize(18);
+        doc.setTextColor('#0288d1');
+        doc.text('Inventario - Minimarket', pageWidth / 2, 15, { align: 'center' });
+
+        const headers = [['Nombre', 'Categoría', 'Cantidad', 'Precio Unitario (S/.)', 'Total (S/.)']];
+        const data = products.map(p => [
+          p.name,
+          p.category,
+          p.quantity.toString(),
+          p.price.toFixed(2),
+          (p.quantity * p.price).toFixed(2)
+        ]);
+        if(doc.autoTable) {
+          doc.autoTable({
+            head: headers,
+            body: data,
+            startY: 25,
+            styles: { fontSize: 10 },
+            headStyles: { fillColor: '#0288d1' },
+            margin: { left: margin, right: margin }
+          });
+          doc.save('inventario_minimarket.pdf');
+          return;
+        }
+        // Fallback sencillo si no está autoTable
+        let y = 25;
+        const colWidths = [50, 40, 30, 40, 40];
+        let x = margin;
+        const rowHeight = 8;
+        doc.setFontSize(12);
+        headers[0].forEach((header, i) => {
+          doc.setFillColor(2,136,209);
+          doc.setTextColor(255,255,255);
+          doc.rect(x, y, colWidths[i], rowHeight, 'F');
+          doc.text(header, x + 2, y + 6);
+          x += colWidths[i];
+        });
+        y += rowHeight;
+        x = margin;
+        doc.setTextColor(0,0,0);
+        data.forEach(row => {
+          row.forEach((cell, i) => {
+            doc.rect(x, y, colWidths[i], rowHeight);
+            doc.text(cell, x + 2, y + 6);
+            x += colWidths[i];
+          });
+          y += rowHeight;
+          x = margin;
+          if (y + rowHeight > doc.internal.pageSize.getHeight()) {
+            doc.addPage();
+            y = margin;
+          }
+        });
+        doc.save('inventario_minimarket.pdf');
+      }
+
+      // ===================== EXPORTACIÓN EXCEL ====================
+
+      // Exportar inventario a Excel (arreglo con corrección más clara)
+      function exportInventoryToExcel(){
+        if(products.length === 0) {
+          alert('No hay productos para exportar.');
+          return;
+        }
+        try {
+          const worksheetData = [
+            ['Nombre', 'Categoría', 'Cantidad', 'Precio Unitario (S/.)', 'Total (S/.)']
+          ];
+          products.forEach((p) => {
+            worksheetData.push([
+              p.name,
+              p.category,
+              p.quantity,
+              p.price.toFixed(2),
+              (p.quantity * p.price).toFixed(2)
+            ]);
+          });
+          const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
+          XLSX.writeFile(wb, 'inventario_minimarket.xlsx');
+        } catch (err) {
+          alert('Error al exportar a Excel: ' + err.message);
+          console.error('Error al exportar a Excel', err);
+        }
+      }
+
+      // Exporta resumen ventas mensual a excel
+      function exportMonthlySalesToExcel(){
+        const summary = getMonthlySalesSummary();
+        if(Object.keys(summary).length === 0){
+          alert('No hay ventas registradas para exportar.');
+          return;
+        }
+        try{
+          const worksheetData = [['Mes', 'Total ventas (S/.)', 'Cantidad vendida']];
+          for(const key of Object.keys(summary).sort()){
+            const [year, month] = key.split('-');
+            const displayMonth = new Date(year, month-1).toLocaleString('es-PE', {month:'long', year:'numeric'});
+            worksheetData.push([displayMonth, summary[key].total.toFixed(2), summary[key].qty]);
+          }
+          const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Resumen Ventas');
+          XLSX.writeFile(wb, 'resumen_ventas_minimarket.xlsx');
+        }catch(err){
+          alert('Error al exportar resumen de ventas a Excel: ' + err.message);
+          console.error('Error exportando resumen ventas', err);
+        }
+      }
+
+      // ===================== FUNCIONALIDAD PRINCIPAL =================
+
+      // Cambiar pestaña
+      function switchTab(tabName) {
+        Object.keys(tabs).forEach(t => {
+          const active = t === tabName;
+          tabs[t].classList.toggle('active', active);
+          tabs[t].setAttribute('aria-selected', active);
+          tabs[t].setAttribute('tabindex', active ? '0' : '-1');
+          sections[t].classList.toggle('active', active);
+        });
+        switch (tabName){
+          case 'charts': updateChartsAndTagsAndAlerts(); break;
+          case 'sales': renderSalesTable(); updateSalesChart(); break;
+          case 'suppliers': renderSuppliersTable(); break;
+          case 'alerts': renderStockAlerts(); break;
+          case 'reports': 
+            renderMonthlySalesSummary();
+            renderMonthlyInventorySummary();
+            break;
+          case 'tags':
+            renderTags();
+            break;
+        }
+      }
+
+      // Eventos
+
+      // Navegacion pestañas
+      Object.entries(tabs).forEach(([key, btn]) => {
+        btn.addEventListener('click', () => {
+          switchTab(key);
+        });
+        btn.addEventListener('keydown', (e) => {
+          let move = null;
+          if (e.key === 'ArrowRight') move = 1;
+          else if (e.key === 'ArrowLeft') move = -1;
+          if(move !== null) {
+            e.preventDefault();
+            const keys = Object.keys(tabs);
+            let idx = keys.indexOf(key) + move;
+            if(idx < 0) idx = keys.length - 1;
+            if(idx >= keys.length) idx = 0;
+            tabs[keys[idx]].focus();
+          }
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            switchTab(key);
+          }
+        });
+      });
+
+      // Agregar producto
+      productForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const name = productForm.productName.value;
+        const category = productForm.productCategory.value;
+        const quantity = productForm.productQuantity.value;
+        const price = productForm.productPrice.value;
+        if (!name || !category || quantity === '' || price === '') {
+          alert('Por favor, completa todos los campos correctamente.');
+          return;
+        }
+        if (quantity < 0 || price < 0) {
+          alert('Cantidad y precio deben ser valores positivos.');
+          return;
+        }
+        addProduct(name, category, quantity, price);
+        productForm.reset();
+        productForm.productName.focus();
+      });
+
+      // Botones editar y eliminar producto
+      productTableBody.addEventListener('click', e => {
+        const target = e.target;
+        if(target.classList.contains('edit-btn')) {
+          const id = target.getAttribute('data-id');
+          const product = products.find(p => p.id === id);
+          if(product) openEditModal(product);
+        } else if(target.classList.contains('delete-btn')) {
+          const id = target.getAttribute('data-id');
+          deleteProduct(id);
+        }
+      });
+
+      // Editar producto submit
+      editProductForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const name = editProductName.value;
+        const category = editProductCategory.value;
+        const quantity = editProductQuantity.value;
+        const price = editProductPrice.value;
+        if (!name || !category || quantity === '' || price === '') {
+          alert('Por favor, completa todos los campos correctamente.');
+          return;
+        }
+        if (quantity < 0 || price < 0) {
+          alert('Cantidad y precio deben ser valores positivos.');
+          return;
+        }
+        updateProduct(name, category, quantity, price);
+      });
+
+      // Cancelar edición producto
+      cancelEditBtn.addEventListener('click', () => { closeEditModal(); });
+      editModal.addEventListener('click', e => { if(e.target === editModal) closeEditModal(); });
+
+      // Buscar y filtrar inventario
+      searchInput.addEventListener('input', () => { renderTable(searchInput.value, categoryFilter.value); });
+      categoryFilter.addEventListener('change', () => { renderTable(searchInput.value, categoryFilter.value); });
+
+      // Exportar Excel y PDF inventario
+      exportExcelBtn.addEventListener('click', () => { exportInventoryToExcel(); });
+      exportPdfBtn.addEventListener('click', () => { exportToPDF(); });
+
+      // Ventas select producto y cantidad
+      saleProductSelect.addEventListener('change', updateSaleTotal);
+      saleQuantityInput.addEventListener('input', updateSaleTotal);
+      saleDateInput.valueAsDate = new Date();
+
+      // Registrar venta
+      saleForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const productId = saleProductSelect.value;
+        const qty = Number(saleQuantityInput.value);
+        const date = saleDateInput.value;
+        if (!productId) {
+          alert('Selecciona un producto válido.');
+          return;
+        }
+        if (!date) {
+          alert('Selecciona una fecha válida.');
+          return;
+        }
+        if (qty <= 0 || isNaN(qty)) {
+          alert('La cantidad debe ser un número entero mayor que cero.');
+          return;
+        }
+        const success = addSale(productId, qty, date);
+        if (!success) return;
+        renderTable(searchInput.value, categoryFilter.value);
+        renderProductOptions();
+        renderSalesTable();
+        updateChartsAndTagsAndAlerts();
+        updateSalesChart();
+        saleForm.reset();
+        saleDateInput.valueAsDate = new Date();
+        saleTotalDisplay.textContent = 'S/ 0.00';
+        saleProductSelect.focus();
+        alert('Venta registrada correctamente.');
+      });
+
+      // Proveedores agregar
+      supplierForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const name = document.getElementById('supplierName').value.trim();
+        const contact = document.getElementById('supplierContact').value.trim();
+        const notes = document.getElementById('supplierNotes').value.trim();
+        if(!name || !contact){
+          alert('Por favor, completa nombre y contacto del proveedor.');
+          return;
+        }
+        addSupplier(name, contact, notes);
+        supplierForm.reset();
+        document.getElementById('supplierName').focus();
+      });
+
+      // Editar proveedor tabla acciones
+      suppliersTableBody.addEventListener('click', e => {
+        const target = e.target;
+        if(target.classList.contains('editSupplier-btn')){
+          const id = target.getAttribute('data-id');
+          const supplier = suppliers.find(s => s.id === id);
+          if(supplier) openEditSupplierModal(supplier);
+        } else if(target.classList.contains('deleteSupplier-btn')){
+          const id = target.getAttribute('data-id');
+          deleteSupplier(id);
+        }
+      });
+
+      // Editar proveedor form submit
+      editSupplierForm.addEventListener('submit', e => {
+        e.preventDefault();
+        const name = editSupplierName.value;
+        const contact = editSupplierContact.value;
+        const notes = editSupplierNotes.value;
+        if(!name || !contact){
+          alert('Por favor, completa nombre y contacto del proveedor.');
+          return;
+        }
+        updateSupplier(name, contact, notes);
+      });
+
+      // Cancelar edición proveedor
+      cancelEditSupplierBtn.addEventListener('click', () => { closeEditSupplierModal(); });
+      editSupplierModal.addEventListener('click', e => { if(e.target === editSupplierModal) closeEditSupplierModal(); });
+
+      // Exportar reportes Excel
+      exportSalesExcelBtn.addEventListener('click', () => { exportMonthlySalesToExcel(); });
+      exportInventoryExcelBtn.addEventListener('click', () => { exportInventoryToExcel(); });
+
+      // Inicialización
+      loadData();
+      renderTable();
+      renderProductOptions();
+      renderSalesTable();
+      renderSuppliersTable();
+      renderStockAlerts();
+      renderMonthlySalesSummary();
+      renderMonthlyInventorySummary();
+      renderTags();
+      updateCharts();
+      updateSalesChart();
+
+    })();
+  </script>
+</body>
+</html>
+
