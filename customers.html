@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM - Clientes</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #333; }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header h1 { font-size: 22px; font-weight: 600; }
+
+        .container { max-width: 1300px; margin: 24px auto; padding: 0 20px; }
+
+        .filters {
+            background: white;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .filters input {
+            flex: 1;
+            min-width: 200px;
+            padding: 9px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .filters input:focus { outline: none; border-color: #3498db; }
+        .filters select {
+            padding: 9px 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        .btn {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #555;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary:hover { background: #dde1e3; }
+
+        .stats {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+            padding: 0 2px;
+        }
+        .stats strong { color: #2c3e50; }
+
+        .table-wrap {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: #2c3e50;
+            color: white;
+            padding: 13px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+        tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: #f8fafc; }
+
+        .name { font-weight: 600; color: #2c3e50; }
+        .company { color: #555; }
+        .rep { font-size: 13px; color: #777; }
+        .birthday { color: #e67e22; font-weight: 500; }
+
+        .interaction { display: flex; align-items: center; gap: 8px; }
+        .interaction-time { color: #555; font-size: 13px; }
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-Call     { background: #d5f5e3; color: #1e8449; }
+        .badge-Email    { background: #d6eaf8; color: #1a5276; }
+        .badge-SMS      { background: #fdebd0; color: #a04000; }
+        .badge-Facebook { background: #d6e4f0; color: #1a3a5c; }
+        .badge-WhatsApp { background: #d5f5e3; color: #145a32; }
+        .badge-Meeting  { background: #e8daef; color: #6c3483; }
+        .badge-LinkedIn { background: #d0e8f2; color: #0a3d62; }
+        .badge-default  { background: #eee; color: #555; }
+
+        .no-data { text-align: center; padding: 50px; color: #aaa; font-size: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <span style="font-size:28px">📋</span>
+    <h1>CRM — Gestión de Clientes</h1>
+</div>
+
+<div class="container">
+
+    <form method="get" class="filters">
+        <input
+            type="text"
+            name="search"
+            placeholder="🔍 Buscar por nombre o empresa..."
+            value="{{ search }}"
+        >
+
+        <select name="birthday">
+            <option value=""           {% if birthday_filter == '' %}selected{% endif %}>📅 Todos los cumpleaños</option>
+            <option value="this_week"  {% if birthday_filter == 'this_week' %}selected{% endif %}>🎂 Esta semana ({{ week_range }})</option>
+            <option value="next_week"  {% if birthday_filter == 'next_week' %}selected{% endif %}>🎂 Próxima semana ({{ next_week_range }})</option>
+            <option value="next_month" {% if birthday_filter == 'next_month' %}selected{% endif %}>🎂 Próximo mes ({{ next_month_name }})</option>
+        </select>
+
+        <select name="order">
+            <option value="name_asc"         {% if order_by == 'name_asc' %}selected{% endif %}>Nombre A → Z</option>
+            <option value="name_desc"        {% if order_by == 'name_desc' %}selected{% endif %}>Nombre Z → A</option>
+            <option value="company_asc"      {% if order_by == 'company_asc' %}selected{% endif %}>Empresa A → Z</option>
+            <option value="company_desc"     {% if order_by == 'company_desc' %}selected{% endif %}>Empresa Z → A</option>
+            <option value="birthday_asc"     {% if order_by == 'birthday_asc' %}selected{% endif %}>Cumpleaños Ene → Dic</option>
+            <option value="birthday_desc"    {% if order_by == 'birthday_desc' %}selected{% endif %}>Cumpleaños Dic → Ene</option>
+            <option value="interaction_desc" {% if order_by == 'interaction_desc' %}selected{% endif %}>Última interacción (reciente)</option>
+            <option value="interaction_asc"  {% if order_by == 'interaction_asc' %}selected{% endif %}>Última interacción (antigua)</option>
+        </select>
+
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a href="/" class="btn btn-secondary">Limpiar</a>
+    </form>
+
+    <div class="stats">
+        Mostrando <strong>{{ total }}</strong> cliente{{ total|pluralize:"s" }}
+        {% if search %} · Búsqueda: <strong>"{{ search }}"</strong>{% endif %}
+        {% if birthday_filter == 'this_week' %}  · <strong>🎂 Esta semana ({{ week_range }})</strong>{% endif %}
+        {% if birthday_filter == 'next_week' %}  · <strong>🎂 Próxima semana ({{ next_week_range }})</strong>{% endif %}
+        {% if birthday_filter == 'next_month' %} · <strong>🎂 Próximo mes ({{ next_month_name }})</strong>{% endif %}
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nombre completo</th>
+                    <th>Empresa</th>
+                    <th>Representante</th>
+                    <th>Cumpleaños</th>
+                    <th>Última interacción</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td style="color:#aaa;font-size:12px">{{ forloop.counter }}</td>
+                <td class="name">{{ customer.full_name }}</td>
+                <td class="company">{{ customer.company.name }}</td>
+                <td class="rep">{{ customer.representative.get_full_name }}</td>
+                <td class="birthday">{{ customer.birth_date|date:"F j" }}</td>
+                <td>
+                    {% if customer.last_interaction_date %}
+                    <div class="interaction">
+                        <span class="interaction-time">{{ customer.last_interaction_date|timesince }}</span>
+                        <span class="badge badge-{{ customer.last_interaction_type|default:'default' }}">
+                            {{ customer.last_interaction_type }}
+                        </span>
+                    </div>
+                    {% else %}
+                    <span style="color:#ccc;font-size:13px">Sin interacciones</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="no-data">
+                    😕 No se encontraron clientes con esos filtros
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
